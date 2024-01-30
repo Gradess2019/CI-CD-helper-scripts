@@ -22,10 +22,8 @@ print("Submission: ", submission)
 
 
 unreal_version = re.search(r"(\d+\.\d+)", unreal_directory).group(1)
-plugin_name = os.path.basename(plugin_directory)
 
 print("Unreal version: ", unreal_version)
-print("Plugin name: ", plugin_name)
 
 
 plugin_descriptor = ""
@@ -34,6 +32,9 @@ for file in os.listdir(plugin_directory):
         plugin_descriptor = rf"{plugin_directory}\{file}"
         break
 
+plugin_name = re.search(r"(\w+).uplugin", plugin_descriptor).group(1)
+
+print("Plugin name: ", plugin_name)
 print("Plugin descriptor: ", plugin_descriptor)
 
 
