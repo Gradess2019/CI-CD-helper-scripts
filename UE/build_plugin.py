@@ -1,6 +1,7 @@
 import argparse
 import os
 import re
+from utils import Utils
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("--unreal-directory", "-ud", type=str, required=True)
@@ -26,11 +27,7 @@ unreal_version = re.search(r"(\d+\.\d+)", unreal_directory).group(1)
 print("Unreal version: ", unreal_version)
 
 
-plugin_descriptor = ""
-for file in os.listdir(plugin_directory):
-    if file.endswith(".uplugin"):
-        plugin_descriptor = rf"{plugin_directory}\{file}"
-        break
+plugin_descriptor = Utils.get_plugin_descriptor_path(plugin_directory)
 
 plugin_name = re.search(r"(\w+).uplugin", plugin_descriptor).group(1)
 
@@ -40,11 +37,11 @@ print("Plugin descriptor: ", plugin_descriptor)
 
 package_name = ""
 if submission:
-    package_name = rf"{destination}\{plugin_name}Submission_{unreal_version}"
+    package_name = rf"{destination}\{plugin_name}Submission"
 else:
-    package_name = rf"{destination}\{plugin_name}_{unreal_version}"
+    package_name = rf"{destination}\{plugin_name}"
 
-print("Archive name: ", package_name)
+print("Package name: ", package_name)
 
 
 run_uat_bat = rf"{args.unreal_directory}\Engine\Build\BatchFiles\RunUAT.bat"
