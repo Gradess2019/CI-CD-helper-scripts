@@ -53,6 +53,9 @@ build_plugin_cmd = rf'{run_uat_bat} BuildPlugin -Rocket -Plugin="{plugin_descrip
 print("RunUAT.bat: ", run_uat_bat)
 print("Build plugin command: ", build_plugin_cmd)
 
-os.system(build_plugin_cmd)
-
-print("Done!")
+return_code = os.system(build_plugin_cmd)
+if return_code != 0:
+    print("Error!")
+    exit(return_code)
+else:
+    print("Done!")
