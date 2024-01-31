@@ -38,17 +38,17 @@ print("Plugin name: ", plugin_name)
 print("Plugin descriptor: ", plugin_descriptor)
 
 
-archive_name = ""
+package_name = ""
 if submission:
-    archive_name = rf"{destination}\{plugin_name}Submission_{unreal_version}.zip"
+    package_name = rf"{destination}\{plugin_name}Submission_{unreal_version}"
 else:
-    archive_name = rf"{destination}\{plugin_name}_{unreal_version}.zip"
+    package_name = rf"{destination}\{plugin_name}_{unreal_version}"
 
-print("Archive name: ", archive_name)
+print("Archive name: ", package_name)
 
 
 run_uat_bat = rf"{args.unreal_directory}\Engine\Build\BatchFiles\RunUAT.bat"
-build_plugin_cmd = rf"{run_uat_bat} BuildPlugin -Rocket -Plugin={plugin_descriptor} -Package={archive_name}"
+build_plugin_cmd = rf"{run_uat_bat} BuildPlugin -Rocket -Plugin={plugin_descriptor} -Package={package_name}"
 
 print("RunUAT.bat: ", run_uat_bat)
 print("Build plugin command: ", build_plugin_cmd)
