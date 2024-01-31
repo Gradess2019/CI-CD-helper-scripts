@@ -48,7 +48,7 @@ print("Archive name: ", package_name)
 
 
 run_uat_bat = rf"{args.unreal_directory}\Engine\Build\BatchFiles\RunUAT.bat"
-build_plugin_cmd = rf"{run_uat_bat} BuildPlugin -Rocket -Plugin={plugin_descriptor} -Package={package_name}"
+build_plugin_cmd = rf'{run_uat_bat} BuildPlugin -Rocket -Plugin="{plugin_descriptor}" -Package="{package_name}"'
 
 print("RunUAT.bat: ", run_uat_bat)
 print("Build plugin command: ", build_plugin_cmd)
