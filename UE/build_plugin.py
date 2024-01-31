@@ -7,8 +7,8 @@ arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("--unreal-directory", "-ud", type=str, required=True)
 arg_parser.add_argument("--plugin-directory", "-pd", type=str, required=True)
 arg_parser.add_argument("--destination", "-d", type=str, required=True)
-arg_parser.add_argument("--submission", "-s", type=bool, default=False, required=False)
-arg_parser.add_argument("--save-package-name", "-spn", type=bool, default=False, required=False)
+arg_parser.add_argument("--submission", "-s", action="store_true", required=False)
+arg_parser.add_argument("--save-package-name", "-spn", action="store_true", required=False)
 args = arg_parser.parse_args()
 
 

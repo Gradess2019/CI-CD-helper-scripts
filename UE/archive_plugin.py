@@ -4,7 +4,7 @@ from utils import Utils
 
 arg_parser = argparse.ArgumentParser()
 arg_parser.add_argument("--package-directory", "-pd", type=str, required=True)
-arg_parser.add_argument("--append-version", "-s", type=bool, default=False, required=False)
+arg_parser.add_argument("--append-version", "-s", action="store_true", required=False)
 args = arg_parser.parse_args()
 
 package_directory = args.package_directory
