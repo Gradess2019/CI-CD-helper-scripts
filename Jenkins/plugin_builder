@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Build plugin') {
+            steps {
+                dir("scripts/UE") {
+                    script {
+                        command = "python -u build_plugin.py --unreal-directory \"${env.UE_DIR}\" --plugin-directory \"${env.PLUGIN_DIR}\" --destination \"${params.BUILD_DESTINATION}\" --save-package-name"
+
+                        if (params.SUBMISSION) {
+                            command += " --submission"
+                        }
+
+                        bat command
+
+                        if (params.ARCHIVE == true) {
+                            package_directory = readFile("${env.PLUGIN_DIR}/package_name.txt").trim()
+                            command = "python -u archive_plugin.py --package-directory ${package_directory}"
+
+                            if (params.APPEND_VERSION) {
+                                command += " --append-version"
+                            }
+                            
+                            bat command
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

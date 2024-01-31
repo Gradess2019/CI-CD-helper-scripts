@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Clone plugin repo') {
+            steps {
+                git branch: 'develop', credentialsId: 'JenkinsAgentCreds', url: "${params.GIT_URL}"
+            }
+        }
+
+        stage('Clone scripts repo') {
+            steps {
+                dir("scripts") {
+                    git credentialsId: 'JenkinsAgentCreds', url: 'https://github.com/Gradess2019/CI-CD-helper-scripts'
+                }
+            }
+        }
+
+        stage('Build plugin 5.1') {
+            when{
+                equals(actual: params.BUILD_5_1, expected: true)
+            }
+            steps {
+                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_1_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'SUBMISSION', value: params.SUBMISSION), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+            }
+        }
+
+        stage('Build plugin 5.2') {
+            when{
+                equals(actual: params.BUILD_5_2, expected: true)
+            }
+            steps {
+                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_2_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'SUBMISSION', value: params.SUBMISSION), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+            }
+        }
+
+        stage('Build plugin 5.3') {
+            when{
+                equals(actual: params.BUILD_5_3, expected: true)
+            }
+            steps {
+                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_3_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'SUBMISSION', value: params.SUBMISSION), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+            }
+        }
+    }
+}

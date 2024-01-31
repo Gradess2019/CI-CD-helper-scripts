@@ -1,0 +1,11 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Build plugin') {
+            steps {
+                build job: 'Plugin Multi-builder', parameters: [string(name: 'GIT_URL', value: "${params.GIT_URL}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'BUILD_5_1', value: params.BUILD_5_1), booleanParam(name: 'BUILD_5_2', value: params.BUILD_5_2), booleanParam(name: 'BUILD_5_3', value: params.BUILD_5_3), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'SUBMISSION', value: params.SUBMISSION), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+            }
+        }
+    }
+}
