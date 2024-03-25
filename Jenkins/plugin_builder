@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build plugin') {
             steps {
-                dir("scripts/UE") {
+                dir("${env.PLUGIN_DIR}/scripts/UE") {
                     script {
                         build_command = "python -u build_plugin.py --unreal-directory \"${env.UE_DIR}\" --plugin-directory \"${env.PLUGIN_DIR}\" --destination \"${params.BUILD_DESTINATION}\" --save-package-name"
 
