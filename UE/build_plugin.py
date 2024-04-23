@@ -1,4 +1,5 @@
 import argparse
+import shutil
 import os
 import re
 from utils import Utils
@@ -52,21 +53,20 @@ if save_package_name:
 run_uat_bat = rf"{args.unreal_directory}\Engine\Build\BatchFiles\RunUAT.bat"
 build_plugin_cmd = rf'{run_uat_bat} BuildPlugin -Rocket -Plugin="{plugin_descriptor}" -Package="{package_name}"'
 
-print("RunUAT.bat: ", run_uat_bat)
 print("Build plugin command: ", build_plugin_cmd)
 
 return_code = os.system(build_plugin_cmd)
 
-if submission:
+if return_code == 0 and submission:
     print("Deleting Binaries and Intermediate folders...")
-    binaries_path = rf"{package_name}\Binaries"
-    intermediate_path = rf"{package_name}\Intermediate"
+    binaries_path = os.path.join(package_name, "Binaries")
+    intermediate_path = os.path.join(package_name, "Intermediate")
 
     if os.path.exists(binaries_path):
-        os.rmdir(binaries_path)
+        shutil.rmtree(binaries_path)
 
     if os.path.exists(intermediate_path):
-        os.rmdir(intermediate_path)
+        shutil.rmtree(intermediate_path)
 
 if return_code != 0:
     print("Error!")
