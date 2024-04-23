@@ -56,6 +56,18 @@ print("RunUAT.bat: ", run_uat_bat)
 print("Build plugin command: ", build_plugin_cmd)
 
 return_code = os.system(build_plugin_cmd)
+
+if submission:
+    print("Deleting Binaries and Intermediate folders...")
+    binaries_path = rf"{package_name}\Binaries"
+    intermediate_path = rf"{package_name}\Intermediate"
+
+    if os.path.exists(binaries_path):
+        os.rmdir(binaries_path)
+
+    if os.path.exists(intermediate_path):
+        os.rmdir(intermediate_path)
+
 if return_code != 0:
     print("Error!")
     exit(return_code)
