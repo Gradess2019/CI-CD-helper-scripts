@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Build plugin') {
             steps {
-                build job: 'Plugin Multi-builder', parameters: [string(name: 'GIT_URL', value: "${params.GIT_URL}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'BUILD_5_0', value: params.BUILD_5_0), booleanParam(name: 'BUILD_5_1', value: params.BUILD_5_1), booleanParam(name: 'BUILD_5_2', value: params.BUILD_5_2), booleanParam(name: 'BUILD_5_3', value: params.BUILD_5_3), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+                build job: 'Plugin Multi-builder', parameters: [string(name: 'GIT_URL', value: "${params.GIT_URL}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'BUILD_5_0', value: params.BUILD_5_0), booleanParam(name: 'BUILD_5_1', value: params.BUILD_5_1), booleanParam(name: 'BUILD_5_2', value: params.BUILD_5_2), booleanParam(name: 'BUILD_5_3', value: params.BUILD_5_3), booleanParam(name: 'BUILD_5_4', value: params.BUILD_5_4), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
             }
         }
     }
