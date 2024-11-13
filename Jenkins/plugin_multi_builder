@@ -61,5 +61,14 @@ pipeline {
                 build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_4_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
             }
         }
+
+        stage('Build plugin 5.5') {
+            when{
+                equals(actual: params.BUILD_5_5, expected: true)
+            }
+            steps {
+                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_5_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+            }
+        }
     }
 }
