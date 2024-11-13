@@ -68,13 +68,17 @@ if return_code == 0 and submission:
     if os.path.exists(intermediate_path):
         shutil.rmtree(intermediate_path)
 
-config_path = os.path.join(plugin_directory, "Config")
-print("Config path: ", config_path)
-print("Copying Config folder...")
-if os.path.exists(config_path):
-    shutil.copytree(config_path, os.path.join(package_name, "Config"))
-else:
-    print("Warning: Config folder not found!")
+config_path_packaged = os.path.join(package_name, "Config")
+
+if not os.path.exists(config_path_packaged):
+    print("Warning: Config folder not found in packaged plugin!")
+    config_path = os.path.join(plugin_directory, "Config")
+    print("Config path: ", config_path)
+    print("Trying to copy Config folder from plugin directory...")
+    if os.path.exists(config_path):
+        shutil.copytree(config_path, os.path.join(package_name, "Config"))
+    else:
+        print("Warning: Config folder not found in plugin directory!")
 
 if return_code != 0:
     print("Error!")
