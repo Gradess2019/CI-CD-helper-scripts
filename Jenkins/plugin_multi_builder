@@ -1,74 +1,138 @@
 pipeline {
     agent any
-    
-    stages {
-        stage('Clone plugin repo') {
-            steps {
-                git branch: 'develop', credentialsId: 'JenkinsAgentCreds', url: "${params.GIT_URL}"
-            }
-        }
 
-        stage('Clone scripts repo') {
+    stages {
+        stage('Validate Parameters') {
             steps {
-                dir("scripts") {
-                    git credentialsId: 'JenkinsAgentCreds', url: 'https://github.com/Gradess2019/CI-CD-helper-scripts'
+                script {
+                    if (params.PLUGIN_REPO != 'None' && params.PLUGIN_BRANCH.trim() == '') {
+                        error("PLUGIN_BRANCH cannot be empty when PLUGIN_REPO is specified.")
+                    }
                 }
             }
         }
 
-        stage('Build plugin 5.0') {
-            when{
-                equals(actual: params.BUILD_5_0, expected: true)
+        stage('Validate Local Plugin Directory') {
+            when {
+                expression { params.PLUGIN_REPO == 'None' }
             }
             steps {
-                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_0_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+                script {
+                    echo "Validating local plugin directory parameter: ${params.PLUGIN_DIR}..."
+                    if (params.PLUGIN_DIR?.trim() == '') {
+                        error("PLUGIN_DIR parameter is empty! Please provide a valid path.")
+                    }
+                    
+                    echo "Checking if the plugin directory exists and is not empty..."
+                    bat """
+                        IF NOT EXIST "${params.PLUGIN_DIR}" (
+                            echo ERROR: Plugin directory does not exist!
+                            exit /B 1
+                        )
+                    """
+                }
             }
         }
 
-        stage('Build plugin 5.1') {
-            when{
-                equals(actual: params.BUILD_5_1, expected: true)
-            }
+        stage('Clone Scripts Repository') {
             steps {
-                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_1_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+                script {
+                    echo "Cloning scripts repository from ${env.SCRIPTS_REPO}..."
+                    bat """
+                        IF EXIST scripts-repo RMDIR /S /Q scripts-repo
+                        git clone --branch master "${env.SCRIPTS_REPO}" scripts-repo
+                    """
+                }
             }
         }
 
-        stage('Build plugin 5.2') {
-            when{
-                equals(actual: params.BUILD_5_2, expected: true)
+        stage('Clone Plugin Repository') {
+            when {
+                expression { params.PLUGIN_REPO != 'None' }
             }
             steps {
-                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_2_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+                script {
+                    echo "Cloning plugin repository from ${params.PLUGIN_REPO}..."
+                    bat """
+                        IF EXIST plugin-repo RMDIR /S /Q plugin-repo
+                        git clone --branch "${params.PLUGIN_BRANCH}" "${params.PLUGIN_REPO}" plugin-repo
+                    """
+                }
             }
         }
 
-        stage('Build plugin 5.3') {
-            when{
-                equals(actual: params.BUILD_5_3, expected: true)
-            }
+        stage('Build Plugin') {
             steps {
-                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_3_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
+                script {
+                    def ueVersions = [
+                        [version: "5.0", ueDir: env.UE_5_0_DIR],
+                        [version: "5.1", ueDir: env.UE_5_1_DIR],
+                        [version: "5.2", ueDir: env.UE_5_2_DIR],
+                        [version: "5.3", ueDir: env.UE_5_3_DIR],
+                        [version: "5.4", ueDir: env.UE_5_4_DIR],
+                        [version: "5.5", ueDir: env.UE_5_5_DIR]
+                    ]
+
+                    for (ue in ueVersions) {
+                        if (params."BUILD_${ue.version.replace('.', '_')}") {
+                            echo "Building plugin for Unreal Engine ${ue.version}..."
+
+                            // Determine plugin directory as an absolute path
+                            def pluginDir = params.PLUGIN_REPO != 'None' 
+                                ? "${WORKSPACE}\\plugin-repo" 
+                                : params.PLUGIN_DIR
+                            echo "Using plugin directory: ${pluginDir}"
+
+                            // Find the .uplugin file in the specified plugin directory
+                            def upluginFile = bat(
+                                script: """
+                                    FOR /F "delims=" %%F IN ('dir /S /B "${pluginDir}\\*.uplugin"') DO @echo %%F
+                                """,
+                                returnStdout: true
+                            ).trim()
+
+                            if (!upluginFile) {
+                                error("No .uplugin file found in ${pluginDir}")
+                            }
+
+                            // Extract the plugin name from the .uplugin file path
+                            def pluginName = upluginFile.substring(upluginFile.lastIndexOf('\\') + 1, upluginFile.lastIndexOf('.'))
+
+                            // Construct the build command
+                            def buildCommand = "python -u scripts-repo\\UE\\build_plugin.py --unreal-directory \"${ue.ueDir}\" --plugin-directory \"${pluginDir}\" --destination \"${params.BUILD_DESTINATION}\""
+                            if (params.SUBMISSION_BUILD) {
+                                buildCommand += " --submission"
+                            }
+
+                            // Run the build command
+                            echo "Executing build command: ${buildCommand}"
+                            bat buildCommand
+
+                            // Archive the plugin
+                            if (params.ARCHIVE) {
+                                // Archive binary build
+                                if (params.BINARY_BUILD) {
+                                    def packageDirectory = "${params.BUILD_DESTINATION}\\${pluginName}"
+                                    echo "Archiving binary build from ${packageDirectory}..."
+                                    def archiveCommand = "python -u scripts-repo\\UE\\archive_plugin.py --package-directory \"${packageDirectory}\""
+                                    echo "Executing archive command: ${archiveCommand}"
+                                    bat archiveCommand
+                                }
+
+                                // Archive submission build
+                                if (params.SUBMISSION_BUILD) {
+                                    def packageDirectory = "${params.BUILD_DESTINATION}\\${pluginName}Submission"
+                                    echo "Archiving submission build from ${packageDirectory}..."
+                                    def archiveCommand = "python -u scripts-repo\\UE\\archive_plugin.py --package-directory \"${packageDirectory}\""
+                                    echo "Executing archive command: ${archiveCommand}"
+                                    bat archiveCommand
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        
-        stage('Build plugin 5.4') {
-            when{
-                equals(actual: params.BUILD_5_4, expected: true)
-            }
-            steps {
-                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_4_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
-            }
-        }
-
-        stage('Build plugin 5.5') {
-            when{
-                equals(actual: params.BUILD_5_5, expected: true)
-            }
-            steps {
-                build job: 'Plugin Builder', parameters: [string(name: 'PLUGIN_DIR', value: "${env.WORKSPACE}"), string(name: 'UE_DIR', value: "${env.UE_5_5_DIR}"), string(name: 'BUILD_DESTINATION', value: "${params.BUILD_DESTINATION}"), booleanParam(name: 'APPEND_VERSION', value: params.APPEND_VERSION), booleanParam(name: 'BINARY_BUILD', value: params.BINARY_BUILD), booleanParam(name: 'SUBMISSION_BUILD', value: params.SUBMISSION_BUILD), booleanParam(name: 'ARCHIVE', value: params.ARCHIVE)], wait: true
-            }
-        }
     }
 }
