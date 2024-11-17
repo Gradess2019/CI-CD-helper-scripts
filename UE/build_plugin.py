@@ -42,6 +42,12 @@ print("Build plugin command: ", build_plugin_cmd)
 
 return_code = os.system(build_plugin_cmd)
 
+if return_code == 0:
+    license_path = os.path.join(plugin_directory, "LICENSE.txt")
+    if os.path.exists(license_path):
+        print("Copying LICENSE.txt to package directory...")
+        shutil.copy(license_path, package_name)
+
 if return_code == 0 and submission:
     submission_package_name = rf"{destination}\{plugin_name}Submission"
     print("Submission package name: ", submission_package_name)
