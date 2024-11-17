@@ -46,6 +46,10 @@ if return_code == 0 and submission:
     submission_package_name = rf"{destination}\{plugin_name}Submission"
     print("Submission package name: ", submission_package_name)
 
+    if os.path.exists(submission_package_name):
+        print("Submission package already exists! Deleting...")
+        shutil.rmtree(submission_package_name)
+
     print("Copying package to submission package...")
     shutil.copytree(package_name, submission_package_name)
 
