@@ -1,0 +1,60 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    if (params.PLUGIN_REPO != 'None' && params.PLUGIN_BRANCH.trim() == '') {
+                        error("PLUGIN_BRANCH cannot be empty when PLUGIN_REPO is selected.")
+                    }
+                }
+            }
+        }
+
+        stage('Clone Scripts Repository') {
+            steps {
+                script {
+                    echo "Cloning scripts repository from ${env.SCRIPTS_REPO}..."
+                    bat """
+                        IF EXIST scripts-repo RMDIR /S /Q scripts-repo
+                        git clone --branch master "${env.SCRIPTS_REPO}" scripts-repo
+                    """
+                }
+            }
+        }
+
+        stage('Clone Plugin Repository') {
+            when {
+                expression { params.PLUGIN_REPO != 'None' }
+            }
+            steps {
+                script {
+                    echo "Cloning plugin repository..."
+                    bat """
+                        IF EXIST plugin-repo RMDIR /S /Q plugin-repo
+                        git clone --branch "${params.PLUGIN_BRANCH}" "${params.PLUGIN_REPO}" plugin-repo
+                    """
+                }
+            }
+        }
+
+        stage('Run Pytest') {
+            steps {
+                script {
+                    def pluginDir = params.PLUGIN_REPO == 'None' ? params.PLUGIN_DIR : "${env.WORKSPACE}\\plugin-repo"
+                    echo "Running pytest with plugin-dir=${pluginDir} and tests from scripts-repo"
+                    bat """
+                        pytest scripts-repo\\Tests --plugin-dir="${pluginDir}" --copyright-regex="${params.COPYRIGHT_REGEX}" --junitxml=test-results.xml
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'test-results.xml'
+        }
+    }
+}
