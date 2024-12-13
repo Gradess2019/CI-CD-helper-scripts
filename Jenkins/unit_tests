@@ -45,7 +45,7 @@ pipeline {
                     def pluginDir = params.PLUGIN_REPO == 'None' ? params.PLUGIN_DIR : "${env.WORKSPACE}\\plugin-repo"
                     echo "Running pytest with plugin-dir=${pluginDir} and tests from scripts-repo"
                     bat """
-                        pytest scripts-repo\\Tests --plugin-dir="${pluginDir}" --copyright-regex="${params.COPYRIGHT_REGEX}" --junitxml=test-results.xml
+                        pytest scripts-repo\\Tests --plugin-dir="${pluginDir}" --copyright-regex="${params.COPYRIGHT_REGEX}" --filter-fields="${params.FILTER_FIELDS}" --junitxml=test-results.xml
                     """
                 }
             }
