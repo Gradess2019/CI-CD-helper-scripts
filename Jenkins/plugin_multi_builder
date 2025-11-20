@@ -70,7 +70,9 @@ pipeline {
                         [version: "5.2", ueDir: env.UE_5_2_DIR],
                         [version: "5.3", ueDir: env.UE_5_3_DIR],
                         [version: "5.4", ueDir: env.UE_5_4_DIR],
-                        [version: "5.5", ueDir: env.UE_5_5_DIR]
+                        [version: "5.5", ueDir: env.UE_5_5_DIR],
+                        [version: "5.6", ueDir: env.UE_5_6_DIR],
+                        [version: "5.7", ueDir: env.UE_5_7_DIR]
                     ]
 
                     for (ue in ueVersions) {
